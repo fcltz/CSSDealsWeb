@@ -1,0 +1,41 @@
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const env = require('./config/env');
+const logger = require('./utils/logger');
+const { startAutoPing } = require('./utils/autoPing');
+const { startCrawler } = require('./crawler/index');
+const productRoutes = require('./routes/productRoutes');
+const productQueue = require('./queue/productQueue');
+
+const app = express();
+
+// Middlewares
+app.use(cors());
+app.use(helmet());
+app.use(express.json());
+
+// Routes
+app.use('/api', productRoutes);
+
+// Health Check & Crawler Status
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/crawler/status', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    queuePending: productQueue.jobs.length,
+    isProcessing: productQueue.isProcessing
+  });
+});
+
+// Inicialização
+app.listen(env.PORT, () => {
+  logger.info(`Server running on port ${env.PORT}`);
+  
+  // Inicia serviços background
+  startAutoPing();
+  startCrawler();
+});
