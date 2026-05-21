@@ -13,10 +13,16 @@ const formatDateTime = (dateStr) => {
 
 const getOptimizedUrl = (url, optimize = true) => {
   if (!url) return '';
-  if (optimize && url.includes('supabase.co')) {
-    const renderUrl = url.replace('/object/', '/render/image/');
-    const separator = renderUrl.includes('?') ? '&' : '?';
-    return `${renderUrl}${separator}width=800&quality=75&resize=contain`;
+  if (optimize) {
+    if (url.includes('aliyuncs.com')) {
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}x-oss-process=image/resize,w_512/quality,Q_65`;
+    }
+    if (url.includes('supabase.co')) {
+      const renderUrl = url.replace('/object/', '/render/image/');
+      const separator = renderUrl.includes('?') ? '&' : '?';
+      return `${renderUrl}${separator}width=800&quality=75&resize=contain`;
+    }
   }
   return url;
 };
