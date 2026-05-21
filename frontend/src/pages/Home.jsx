@@ -6,6 +6,20 @@ import ProductCard from '../components/ProductCard';
 import { SkeletonGrid } from '../components/Skeleton';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+const CATEGORY_SIZES = {
+  '12': ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'], // Coat
+  '33': ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'], // Down Jacket
+  '32': ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'], // Hoodie
+  '35': ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'], // Long Sleeve
+  '15': [
+    'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'XXXXL',
+    '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42'
+  ], // Pants
+  '11': ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48'], // Shoes
+  '34': ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'], // Suit
+  '14': ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'] // T-shirts
+};
+
 export default function Home() {
   const { 
     category, 
@@ -15,7 +29,9 @@ export default function Home() {
     minPrice, 
     setMinPrice, 
     maxPrice, 
-    setMaxPrice 
+    setMaxPrice,
+    size,
+    setSize
   } = useStore();
   
   const debouncedSearch = useDebounce(search, 500);
@@ -47,10 +63,10 @@ export default function Home() {
     setMaxPrice(debouncedMaxPrice);
   }, [debouncedMaxPrice, setMaxPrice]);
 
-  // Reset page when search, category, or prices change
+  // Reset page when search, category, prices, or size change
   useEffect(() => {
     setPage(1);
-  }, [category, debouncedSearch, sort, debouncedMinPrice, debouncedMaxPrice]);
+  }, [category, debouncedSearch, sort, debouncedMinPrice, debouncedMaxPrice, size]);
 
   const { data, isLoading, isError, error } = useProducts({
     page,
@@ -59,7 +75,8 @@ export default function Home() {
     search: debouncedSearch,
     sort,
     minPrice: debouncedMinPrice,
-    maxPrice: debouncedMaxPrice
+    maxPrice: debouncedMaxPrice,
+    size
   });
 
   const handlePrevPage = () => setPage(p => Math.max(1, p - 1));
@@ -71,7 +88,7 @@ export default function Home() {
 
   return (
     <div className="page-content">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2 className="page-title" style={{ marginBottom: 0 }}>
           {category === 'all' ? 'Todos os Produtos' : 'Produtos da Categoria'}
         </h2>
@@ -106,6 +123,52 @@ export default function Home() {
           </select>
         </div>
       </div>
+
+      {/* Sizing Filter Badges */}
+      {CATEGORY_SIZES[category] && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--text-secondary)' }}>Tamanho:</span>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setSize('')}
+              className={`size-badge-btn ${size === '' ? 'active' : ''}`}
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: '9999px',
+                fontSize: '0.8rem',
+                fontWeight: '600',
+                border: '1px solid var(--border)',
+                backgroundColor: size === '' ? 'var(--primary)' : 'var(--bg-card)',
+                color: size === '' ? 'white' : 'var(--text-primary)',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Todos
+            </button>
+            {CATEGORY_SIZES[category].map((s) => (
+              <button
+                key={s}
+                onClick={() => setSize(s)}
+                className={`size-badge-btn ${size === s ? 'active' : ''}`}
+                style={{
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
+                  border: '1px solid var(--border)',
+                  backgroundColor: size === s ? 'var(--primary)' : 'var(--bg-card)',
+                  color: size === s ? 'white' : 'var(--text-primary)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <SkeletonGrid count={8} />

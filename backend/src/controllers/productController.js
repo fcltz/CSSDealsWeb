@@ -3,7 +3,7 @@ const logger = require('../utils/logger');
 
 const getProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 20, category, search, sort = 'recent', minPrice, maxPrice } = req.query;
+    const { page = 1, limit = 20, category, search, sort = 'recent', minPrice, maxPrice, size } = req.query;
 
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
@@ -32,6 +32,18 @@ const getProducts = async (req, res) => {
       if (!isNaN(maxVal)) {
         query = query.lte('skus->0->price', maxVal);
       }
+    }
+
+    if (size) {
+      const sizeVariants = [
+        size,
+        size.toLowerCase(),
+        size.toUpperCase(),
+        size.charAt(0).toUpperCase() + size.slice(1).toLowerCase()
+      ];
+      const uniqueVariants = Array.from(new Set(sizeVariants));
+      const orConditions = uniqueVariants.map(v => `skus.cs.[{"size":"${v}"}]`);
+      query = query.or(orConditions.join(','));
     }
 
     if (sort === 'recent') {
