@@ -1,5 +1,6 @@
 const cssDealsApi = require('../integrations/cssDealsApi');
 const productService = require('../services/productService');
+const discordService = require('../services/discordService');
 const logger = require('../utils/logger');
 
 async function syncProductJob(productSummary) {
@@ -48,6 +49,9 @@ async function syncProductJob(productSummary) {
 
     await productService.upsertProduct(productData);
     logger.debug(`Product ${productId} synced successfully.`);
+    discordService.sendNewProductNotification(productData).catch(err => {
+      logger.error(`Error sending Discord notification: ${err.message}`);
+    });
   } catch (error) {
     logger.error(`Error in syncProductJob for ID ${productSummary?.id}: ${error.message}`);
   }
