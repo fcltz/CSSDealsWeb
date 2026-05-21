@@ -7,5 +7,5 @@ module.exports = {
   SUPABASE_KEY: process.env.SUPABASE_KEY,
   AUTO_PING_URL: process.env.AUTO_PING_URL,
   AUTO_PING_INTERVAL: parseInt(process.env.AUTO_PING_INTERVAL || '300000', 10),
-  CRAWLER_CRON: process.env.CRAWLER_CRON || '* * * * *',
+  CRAWLER_INTERVAL: parseInt(process.env.CRAWLER_INTERVAL || '300000', 10),
 };

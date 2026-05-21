@@ -21,7 +21,6 @@ async function syncGlobalJob() {
     
     logger.info(`Global Sync: Total items = ${total}, Total pages = ${totalPages}`);
 
-    const existingIds = await productService.getExistingProductIds();
     const currentIds = new Set();
     
     processPage(firstPageRes.data.records, currentIds);
@@ -36,6 +35,10 @@ async function syncGlobalJob() {
         logger.error(`Failed to sync globally on page ${page}: ${err.message}`);
       }
     }
+
+    // Espera até que toda a fila de produtos seja sincronizada (comprimida e salva no Supabase)
+    logger.info('Waiting for all queued products to finish syncing...');
+    await productQueue.waitTillEmpty();
 
     await productService.markMissingProductsAsDeleted(currentIds);
 
