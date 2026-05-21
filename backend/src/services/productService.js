@@ -65,9 +65,28 @@ async function markMissingProductsAsDeleted(currentProductIds) {
     logger.error(`Error deleting missing products globally: ${error.message}`);
   }
 }
+async function getProductImages(id) {
+  if (!supabase) return null;
+  
+  try {
+    const { data, error } = await supabase
+      .from('productsv1')
+      .select('images')
+      .eq('id', String(id))
+      .maybeSingle();
+      
+    if (error) throw error;
+    
+    return data ? data.images : null;
+  } catch (error) {
+    logger.error(`Error fetching images for product ${id}: ${error.message}`);
+    return null;
+  }
+}
 
 module.exports = {
   getExistingProductIds,
   upsertProduct,
-  markMissingProductsAsDeleted
+  markMissingProductsAsDeleted,
+  getProductImages
 };

@@ -40,8 +40,8 @@ app.listen(env.PORT, () => {
   startAutoPing();
   startCrawler();
   
-  // Inicia migração de imagens existentes em background
-  startImageMigration().catch(err => {
-    logger.error(`Error in background image migration: ${err.message}`);
-  });
+  // Inicia migração de imagens existentes em background (Desativado conforme solicitação de rodar apenas para produtos novos)
+  // startImageMigration().catch(err => {
+  //   logger.error(`Error in background image migration: ${err.message}`);
+  // });
 });
