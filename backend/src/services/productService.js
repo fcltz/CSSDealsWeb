@@ -6,7 +6,7 @@ async function getExistingProductIds() {
 
   try {
     const { data, error } = await supabase
-      .from('productsv2')
+      .from('products')
       .select('id');
 
     if (error) throw error;
@@ -28,7 +28,7 @@ async function upsertProduct(productData) {
     productData.last_seen = new Date().toISOString();
 
     const { error } = await supabase
-      .from('productsv2')
+      .from('products')
       .upsert(productData, { onConflict: 'id' });
 
     if (error) throw error;
@@ -42,7 +42,7 @@ async function markMissingProductsAsDeleted(currentProductIds) {
 
   try {
     const { data, error } = await supabase
-      .from('productsv2')
+      .from('products')
       .select('id');
 
     if (error) throw error;
@@ -56,7 +56,7 @@ async function markMissingProductsAsDeleted(currentProductIds) {
       for (let i = 0; i < idsToDelete.length; i += chunkSize) {
         const chunk = idsToDelete.slice(i, i + chunkSize);
         await supabase
-          .from('productsv2')
+          .from('products')
           .delete()
           .in('id', chunk);
       }
@@ -70,7 +70,7 @@ async function getProductImages(id) {
 
   try {
     const { data, error } = await supabase
-      .from('productsv2')
+      .from('products')
       .select('images')
       .eq('id', String(id))
       .maybeSingle();
@@ -88,7 +88,7 @@ async function deleteProduct(id) {
   if (!supabase) return;
   try {
     const { error } = await supabase
-      .from('productsv2')
+      .from('products')
       .delete()
       .eq('id', String(id));
 

@@ -17,7 +17,7 @@ async function processarProduto(produto) {
     const urlsChanged = JSON.stringify(imagens) !== JSON.stringify(novasImagens);
     if (urlsChanged) {
       const { error } = await supabase
-        .from('productsv2')
+        .from('products')
         .update({ images: novasImagens })
         .eq('id', produto.id);
 
@@ -55,7 +55,7 @@ async function iniciar() {
     logger.info(`Fetching batch ${pagina + 1} (range ${inicio} to ${fim})...`);
 
     const { data: produtos, error } = await supabase
-      .from('productsv2')
+      .from('products')
       .select('id, images')
       .range(inicio, fim);
 

@@ -10,7 +10,7 @@ const getProducts = async (req, res) => {
     const from = (pageNum - 1) * limitNum;
     const to = from + limitNum - 1;
 
-    let query = supabase.from('productsv2').select('*', { count: 'exact' });
+    let query = supabase.from('products').select('*', { count: 'exact' });
 
     if (category && category !== 'all') {
       query = query.eq('category_id', category);
@@ -65,7 +65,7 @@ const getProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase.from('productsv2').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
 
     if (error) {
       if (error.code === 'PGRST116') return res.status(404).json({ success: false, message: 'Product not found' });
@@ -121,7 +121,7 @@ const getCategories = async (req, res) => {
 
 const getStats = async (req, res) => {
   try {
-    const { count, error } = await supabase.from('productsv2').select('*', { count: 'exact', head: true });
+    const { count, error } = await supabase.from('products').select('*', { count: 'exact', head: true });
     if (error) throw error;
     res.json({ success: true, data: { totalProducts: count } });
   } catch (error) {
