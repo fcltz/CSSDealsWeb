@@ -4,6 +4,7 @@ import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 export default function ProductCard({ product }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : ['https://via.placeholder.com/400?text=No+Image'];
 
   const nextImage = (e) => {
@@ -22,7 +23,12 @@ export default function ProductCard({ product }) {
 
   return (
     <>
-      <div className="product-card">
+      <div 
+        className="product-card"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={() => setIsHovered(true)}
+      >
         <div className="product-image-container">
           <img 
             src={images[currentImageIndex]} 
@@ -79,47 +85,95 @@ export default function ProductCard({ product }) {
             })()}
           </div>
           
-          {images.length > 1 && (
+          {images.length > 1 && isHovered && (
             <>
               <button 
                 className="carousel-btn prev"
                 onClick={prevImage}
-                style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: 'white', borderRadius: '50%', padding: '0.25rem' }}
+                style={{ 
+                  position: 'absolute', 
+                  left: '0.5rem', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  background: 'rgba(0,0,0,0.6)', 
+                  color: 'white', 
+                  borderRadius: '50%', 
+                  padding: '0.35rem', 
+                  zIndex: 4,
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
               >
                 <ChevronLeft size={20} />
               </button>
               <button 
                 className="carousel-btn next"
                 onClick={nextImage}
-                style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: 'white', borderRadius: '50%', padding: '0.25rem' }}
+                style={{ 
+                  position: 'absolute', 
+                  right: '0.5rem', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  background: 'rgba(0,0,0,0.6)', 
+                  color: 'white', 
+                  borderRadius: '50%', 
+                  padding: '0.35rem', 
+                  zIndex: 4,
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
               >
                 <ChevronRight size={20} />
               </button>
+
+              <div 
+                className="hide-scrollbar"
+                style={{ 
+                  position: 'absolute', 
+                  bottom: 0, 
+                  left: 0, 
+                  right: 0, 
+                  display: 'flex', 
+                  gap: '0.35rem', 
+                  overflowX: 'auto', 
+                  padding: '0.5rem', 
+                  background: 'rgba(0,0,0,0.65)', 
+                  backdropFilter: 'blur(4px)',
+                  zIndex: 3,
+                  scrollbarWidth: 'none'
+                }}
+              >
+                {images.slice(0, 10).map((img, idx) => (
+                  <img 
+                    key={idx} 
+                    src={img} 
+                    alt={`${product.title} thumb ${idx}`} 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(idx);
+                    }}
+                    loading="lazy"
+                    style={{ 
+                      width: '36px', 
+                      height: '36px', 
+                      objectFit: 'cover', 
+                      borderRadius: '4px', 
+                      cursor: 'pointer', 
+                      border: currentImageIndex === idx ? '2px solid var(--accent-primary)' : '2px solid rgba(255,255,255,0.4)',
+                      flexShrink: 0
+                    }} 
+                  />
+                ))}
+              </div>
             </>
           )}
         </div>
-        
-        {images.length > 1 && (
-          <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '0.5rem 1rem', background: 'var(--bg-tertiary)' }}>
-            {images.map((img, idx) => (
-              <img 
-                key={idx} 
-                src={img} 
-                alt={`${product.title} thumb ${idx}`} 
-                onClick={() => setCurrentImageIndex(idx)}
-                style={{ 
-                  width: '40px', 
-                  height: '40px', 
-                  objectFit: 'cover', 
-                  borderRadius: '4px', 
-                  cursor: 'pointer', 
-                  border: currentImageIndex === idx ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                  flexShrink: 0
-                }} 
-              />
-            ))}
-          </div>
-        )}
         
         <div className="product-info">
           <h3 className="product-title" title={product.title}>{product.title}</h3>

@@ -1,5 +1,6 @@
 const cssDealsApi = require('../integrations/cssDealsApi');
 const productService = require('../services/productService');
+const imageService = require('../services/imageService');
 const logger = require('../utils/logger');
 
 async function syncProductJob(productSummary) {
@@ -15,6 +16,9 @@ async function syncProductJob(productSummary) {
     const data = detailResponse.data;
     const imagesUrls = (data.images || []).map(img => img.url);
 
+    // Baixa, comprime e envia as imagens para o Supabase Storage
+    const processedImages = await imageService.processProductImages(data.id, imagesUrls);
+
     const productData = {
       id: String(data.id),
       code: data.code,
@@ -24,7 +28,7 @@ async function syncProductJob(productSummary) {
       category_name: data.category?.name || '',
       source_link: data.sourceLink,
       product_url: data.url,
-      images: imagesUrls,
+      images: processedImages,
       skus: data.skus || [],
       cssbuy_order_id: data.cssbuyOrderId,
       cssbuy_order_no: data.cssbuyOrderNo,
@@ -32,7 +36,7 @@ async function syncProductJob(productSummary) {
     };
 
     await productService.upsertProduct(productData);
-    logger.debug(`Product ${productId} synced successfully.`);
+    logger.debug(`Product ${productId} synced successfully with optimized images.`);
   } catch (error) {
     logger.error(`Error in syncProductJob for ID ${productSummary?.id}: ${error.message}`);
   }

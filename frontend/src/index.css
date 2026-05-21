@@ -452,3 +452,13 @@ button {
     transform: translateX(0);
   }
 }
+
+/* Utilitário para esconder barras de rolagem */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}
+

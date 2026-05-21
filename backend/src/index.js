@@ -5,6 +5,7 @@ const env = require('./config/env');
 const logger = require('./utils/logger');
 const { startAutoPing } = require('./utils/autoPing');
 const { startCrawler } = require('./crawler/index');
+const { startImageMigration } = require('./scripts/migrateImages');
 const productRoutes = require('./routes/productRoutes');
 const productQueue = require('./queue/productQueue');
 
@@ -38,4 +39,9 @@ app.listen(env.PORT, () => {
   // Inicia serviços background
   startAutoPing();
   startCrawler();
+  
+  // Inicia migração de imagens existentes em background
+  startImageMigration().catch(err => {
+    logger.error(`Error in background image migration: ${err.message}`);
+  });
 });
