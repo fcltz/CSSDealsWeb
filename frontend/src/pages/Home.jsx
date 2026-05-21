@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useStore from '../store/useStore';
 import { useDebounce } from '../hooks/useDebounce';
 import { useProducts } from '../hooks/useProducts';
@@ -7,18 +7,59 @@ import { SkeletonGrid } from '../components/Skeleton';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Home() {
-  const { category, search, sort, setSort } = useStore();
+  const { 
+    category, 
+    search, 
+    sort, 
+    setSort, 
+    minPrice, 
+    setMinPrice, 
+    maxPrice, 
+    setMaxPrice 
+  } = useStore();
+  
   const debouncedSearch = useDebounce(search, 500);
+  
+  const [localMinPrice, setLocalMinPrice] = useState(minPrice);
+  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
+  
+  const debouncedMinPrice = useDebounce(localMinPrice, 500);
+  const debouncedMaxPrice = useDebounce(localMaxPrice, 500);
   
   const [page, setPage] = useState(1);
   const limit = 25;
+
+  // Sync store changes back to local inputs (e.g. on resetFilters)
+  useEffect(() => {
+    setLocalMinPrice(minPrice);
+  }, [minPrice]);
+
+  useEffect(() => {
+    setLocalMaxPrice(maxPrice);
+  }, [maxPrice]);
+
+  // Sync debounced inputs to store
+  useEffect(() => {
+    setMinPrice(debouncedMinPrice);
+  }, [debouncedMinPrice, setMinPrice]);
+
+  useEffect(() => {
+    setMaxPrice(debouncedMaxPrice);
+  }, [debouncedMaxPrice, setMaxPrice]);
+
+  // Reset page when search, category, or prices change
+  useEffect(() => {
+    setPage(1);
+  }, [category, debouncedSearch, sort, debouncedMinPrice, debouncedMaxPrice]);
 
   const { data, isLoading, isError, error } = useProducts({
     page,
     limit,
     category,
     search: debouncedSearch,
-    sort
+    sort,
+    minPrice: debouncedMinPrice,
+    maxPrice: debouncedMaxPrice
   });
 
   const handlePrevPage = () => setPage(p => Math.max(1, p - 1));
@@ -30,12 +71,31 @@ export default function Home() {
 
   return (
     <div className="page-content">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2 className="page-title" style={{ marginBottom: 0 }}>
           {category === 'all' ? 'Todos os Produtos' : 'Produtos da Categoria'}
         </h2>
         
         <div className="filters-bar" style={{ marginBottom: 0 }}>
+          <div className="price-filter-container">
+            <span style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--text-secondary)' }}>Preço (¥):</span>
+            <input
+              type="number"
+              className="price-input"
+              placeholder="Min"
+              value={localMinPrice}
+              onChange={(e) => setLocalMinPrice(e.target.value)}
+            />
+            <span style={{ color: 'var(--text-tertiary)' }}>-</span>
+            <input
+              type="number"
+              className="price-input"
+              placeholder="Max"
+              value={localMaxPrice}
+              onChange={(e) => setLocalMaxPrice(e.target.value)}
+            />
+          </div>
+
           <select 
             className="filter-select" 
             value={sort} 

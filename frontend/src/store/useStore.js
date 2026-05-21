@@ -17,9 +17,13 @@ const useStore = create(
       setCategory: (category) => set({ category }),
       sort: 'recent',
       setSort: (sort) => set({ sort }),
+      minPrice: '',
+      setMinPrice: (minPrice) => set({ minPrice }),
+      maxPrice: '',
+      setMaxPrice: (maxPrice) => set({ maxPrice }),
       
       // Reset filtros
-      resetFilters: () => set({ search: '', category: 'all', sort: 'recent' })
+      resetFilters: () => set({ search: '', category: 'all', sort: 'recent', minPrice: '', maxPrice: '' })
     }),
     {
       name: 'cssdeals-storage',

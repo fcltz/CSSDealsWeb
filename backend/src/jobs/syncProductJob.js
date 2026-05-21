@@ -6,10 +6,25 @@ const logger = require('../utils/logger');
 async function syncProductJob(productSummary) {
   try {
     const productId = productSummary.id;
-    const detailResponse = await cssDealsApi.getProductDetails(productId);
+    let detailResponse;
+    try {
+      detailResponse = await cssDealsApi.getProductDetails(productId);
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        detailResponse = { code: 404, msg: 'Product does not exist (HTTP 404)' };
+      } else {
+        throw error;
+      }
+    }
     
-    if (detailResponse.code !== 0 || !detailResponse.data) {
-      logger.warn(`Failed to fetch details for product ${productId}`);
+    if (detailResponse && detailResponse.code === 404) {
+      logger.info(`Product ${productId} details do not exist (code 404). Deleting from DB.`);
+      await productService.deleteProduct(productId);
+      return;
+    }
+    
+    if (!detailResponse || detailResponse.code !== 0 || !detailResponse.data) {
+      logger.warn(`Failed to fetch details for product ${productId}: ${detailResponse?.msg || 'Unknown error'}`);
       return;
     }
 

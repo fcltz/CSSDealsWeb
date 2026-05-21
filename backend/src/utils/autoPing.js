@@ -3,8 +3,8 @@ const env = require('../config/env');
 const logger = require('./logger');
 
 function startAutoPing() {
-  if (!env.AUTO_PING_URL) {
-    logger.info('AutoPing desativado: AUTO_PING_URL não configurada.');
+  if (!env.AUTO_PING_URL || !env.AUTO_PING_INTERVAL) {
+    logger.info('AutoPing desativado: AUTO_PING_URL ou AUTO_PING_INTERVAL não configuradas.');
     return;
   }
 

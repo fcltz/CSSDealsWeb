@@ -10,6 +10,9 @@ async function syncGlobalJob() {
   try {
     const pageSize = 99;
     
+    const existingIds = await productService.getExistingProductIds();
+    logger.info(`Global Sync: Found ${existingIds.size} existing products in database.`);
+
     const firstPageRes = await cssDealsApi.getAllProducts(1, pageSize);
     if (firstPageRes.code !== 0 || !firstPageRes.data) {
       logger.warn(`Could not fetch first page globally`);
@@ -23,13 +26,13 @@ async function syncGlobalJob() {
 
     const currentIds = new Set();
     
-    processPage(firstPageRes.data.records, currentIds);
+    processPage(firstPageRes.data.records, currentIds, existingIds);
 
     for (let page = 2; page <= totalPages; page++) {
       try {
         const pageRes = await cssDealsApi.getAllProducts(page, pageSize);
         if (pageRes.code === 0 && pageRes.data && pageRes.data.records) {
-          processPage(pageRes.data.records, currentIds);
+          processPage(pageRes.data.records, currentIds, existingIds);
         }
       } catch (err) {
         logger.error(`Failed to sync globally on page ${page}: ${err.message}`);
@@ -47,12 +50,18 @@ async function syncGlobalJob() {
   }
 }
 
-function processPage(records, currentIds) {
+function processPage(records, currentIds, existingIds) {
   if (!records || !Array.isArray(records)) return;
 
   for (const record of records) {
     const productId = String(record.id);
     currentIds.add(productId);
+    
+    // Se o produto já existe no banco, pular requisição de detalhes e processamento de imagens
+    if (existingIds.has(productId)) {
+      continue;
+    }
+    
     productQueue.add(() => syncProductJob(record));
   }
 }

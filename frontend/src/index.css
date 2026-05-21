@@ -104,6 +104,8 @@ button {
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
   padding: 0 1rem;
 }
 
@@ -195,6 +197,9 @@ button {
 .page-content {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  will-change: scroll-position;
   padding: 2rem;
 }
 
@@ -264,6 +269,8 @@ button {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
   display: flex;
   flex-direction: column;
+  backface-visibility: hidden;
+  will-change: transform, box-shadow;
 }
 
 .product-card:hover {
@@ -287,6 +294,7 @@ button {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  will-change: transform;
 }
 
 .product-card:hover .product-image {
@@ -461,4 +469,48 @@ button {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;             /* Chrome, Safari, Opera */
 }
+
+/* Filtro de Preço */
+.price-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.75rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.price-filter-container:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.price-input {
+  width: 70px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  font-weight: 500;
+  text-align: center;
+}
+
+.price-input::-webkit-outer-spin-button,
+.price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.price-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.price-input::placeholder {
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+
 

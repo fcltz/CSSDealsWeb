@@ -1,7 +1,7 @@
 -- Supabase schema for CSSDealsWeb
 
 -- Tabela de Produtos
-CREATE TABLE public.productsv1 (
+CREATE TABLE public.productsv2 (
     id TEXT PRIMARY KEY,
     code TEXT,
     title TEXT NOT NULL,
@@ -21,13 +21,13 @@ CREATE TABLE public.productsv1 (
 );
 
 -- Índices solicitados para performance
-CREATE INDEX idx_productsv1_category_id ON public.productsv1 (category_id);
-CREATE INDEX idx_productsv1_created_at ON public.productsv1 (created_at);
-CREATE INDEX idx_productsv1_last_seen ON public.productsv1 (last_seen);
-CREATE INDEX idx_productsv1_title ON public.productsv1 USING GIN (to_tsvector('english', title));
+CREATE INDEX idx_productsv2_category_id ON public.productsv2 (category_id);
+CREATE INDEX idx_productsv2_created_at ON public.productsv2 (created_at);
+CREATE INDEX idx_productsv2_last_seen ON public.productsv2 (last_seen);
+CREATE INDEX idx_productsv2_title ON public.productsv2 USING GIN (to_tsvector('english', title));
 
 -- Trigger para atualizar `updated_at` automaticamente
-CREATE OR REPLACE FUNCTION update_productsv1_updated_at_column()
+CREATE OR REPLACE FUNCTION update_productsv2_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
    NEW.updated_at = NOW(); 
@@ -35,6 +35,6 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER trg_productsv1_updated_at
-BEFORE UPDATE ON public.productsv1
-FOR EACH ROW EXECUTE PROCEDURE update_productsv1_updated_at_column();
+CREATE TRIGGER trg_productsv2_updated_at
+BEFORE UPDATE ON public.productsv2
+FOR EACH ROW EXECUTE PROCEDURE update_productsv2_updated_at_column();
