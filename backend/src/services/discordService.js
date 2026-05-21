@@ -31,8 +31,15 @@ async function getDmChannelId() {
   }
 }
 
-async function sendNewProductNotification(product) {
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+async function sendNewProductNotification(product, retryCount = 0) {
   if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_USER_ID) {
+    return;
+  }
+  
+  if (retryCount > 5) {
+    logger.error(`Discord notification failed for product ${product.id} after 5 retries.`);
     return;
   }
   
@@ -93,6 +100,13 @@ async function sendNewProductNotification(product) {
     
     logger.info(`Discord DM notification sent successfully for product ${product.id}`);
   } catch (error) {
+    if (error.response && error.response.status === 429) {
+      const retryAfter = (error.response.data.retry_after || 1) * 1000;
+      logger.warn(`Discord rate limit hit. Retrying in ${retryAfter}ms (attempt ${retryCount + 1})...`);
+      await sleep(retryAfter);
+      return sendNewProductNotification(product, retryCount + 1);
+    }
+    
     logger.error(`Error sending Discord DM message: ${error.response?.data ? JSON.stringify(error.response.data) : error.message}`);
   }
 }

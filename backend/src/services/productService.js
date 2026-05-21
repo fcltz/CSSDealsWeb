@@ -99,11 +99,29 @@ async function deleteProduct(id) {
   }
 }
 
+async function getProduct(id) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('id')
+      .eq('id', String(id))
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    logger.error(`Error fetching product ${id}: ${error.message}`);
+    return null;
+  }
+}
+
 module.exports = {
   getExistingProductIds,
   upsertProduct,
   markMissingProductsAsDeleted,
   getProductImages,
-  deleteProduct
+  deleteProduct,
+  getProduct
 };
 

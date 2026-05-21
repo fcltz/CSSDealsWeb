@@ -47,11 +47,18 @@ async function syncProductJob(productSummary) {
       creator_id: data.creatorId
     };
 
+    // Verifica se o produto já existe no banco de dados ANTES do upsert
+    const existingProduct = await productService.getProduct(productId);
+    const isNewProduct = !existingProduct;
+
     await productService.upsertProduct(productData);
     logger.debug(`Product ${productId} synced successfully.`);
-    discordService.sendNewProductNotification(productData).catch(err => {
-      logger.error(`Error sending Discord notification: ${err.message}`);
-    });
+    
+    if (isNewProduct) {
+      discordService.sendNewProductNotification(productData).catch(err => {
+        logger.error(`Error sending Discord notification: ${err.message}`);
+      });
+    }
   } catch (error) {
     logger.error(`Error in syncProductJob for ID ${productSummary?.id}: ${error.message}`);
   }
