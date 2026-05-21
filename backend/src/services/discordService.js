@@ -2,50 +2,15 @@ const axios = require('axios');
 const env = require('../config/env');
 const logger = require('../utils/logger');
 
-let dmChannelId = null;
-
-async function getDmChannelId() {
-  if (dmChannelId) return dmChannelId;
-  
-  if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_USER_ID) {
-    return null;
-  }
-  
-  try {
-    const response = await axios.post(
-      'https://discord.com/api/v10/users/@me/channels',
-      { recipient_id: env.DISCORD_USER_ID },
-      {
-        headers: {
-          Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    dmChannelId = response.data.id;
-    return dmChannelId;
-  } catch (error) {
-    logger.error(`Error creating Discord DM channel: ${error.response?.data ? JSON.stringify(error.response.data) : error.message}`);
-    return null;
-  }
-}
-
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function sendNewProductNotification(product, retryCount = 0) {
-  if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_USER_ID) {
+  if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CHANNEL_ID) {
     return;
   }
   
   if (retryCount > 5) {
     logger.error(`Discord notification failed for product ${product.id} after 5 retries.`);
-    return;
-  }
-  
-  const channelId = await getDmChannelId();
-  if (!channelId) {
-    logger.warn('Could not send Discord notification: DM channel not created.');
     return;
   }
   
@@ -88,7 +53,7 @@ async function sendNewProductNotification(product, retryCount = 0) {
     }
     
     await axios.post(
-      `https://discord.com/api/v10/channels/${channelId}/messages`,
+      `https://discord.com/api/v10/channels/${env.DISCORD_CHANNEL_ID}/messages`,
       { embeds },
       {
         headers: {
@@ -98,7 +63,7 @@ async function sendNewProductNotification(product, retryCount = 0) {
       }
     );
     
-    logger.info(`Discord DM notification sent successfully for product ${product.id}`);
+    logger.info(`Discord channel notification sent successfully for product ${product.id}`);
   } catch (error) {
     if (error.response && error.response.status === 429) {
       const retryAfter = (error.response.data.retry_after || 1) * 1000;
@@ -107,7 +72,7 @@ async function sendNewProductNotification(product, retryCount = 0) {
       return sendNewProductNotification(product, retryCount + 1);
     }
     
-    logger.error(`Error sending Discord DM message: ${error.response?.data ? JSON.stringify(error.response.data) : error.message}`);
+    logger.error(`Error sending Discord channel message: ${error.response?.data ? JSON.stringify(error.response.data) : error.message}`);
   }
 }
 

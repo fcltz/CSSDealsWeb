@@ -12,5 +12,5 @@ module.exports = {
   AUTO_PING_INTERVAL: !isNaN(parsedInterval) ? parsedInterval : null,
   CRAWLER_INTERVAL: parseInt(process.env.CRAWLER_INTERVAL || '300000', 10),
   DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN || null,
-  DISCORD_USER_ID: process.env.DISCORD_USER_ID || null,
+  DISCORD_CHANNEL_ID: process.env.DISCORD_CHANNEL_ID || null,
 };
