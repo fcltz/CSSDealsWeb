@@ -76,6 +76,91 @@ async function sendNewProductNotification(product, retryCount = 0) {
   }
 }
 
+async function sendDirectProductNotification(discordId, product, retryCount = 0) {
+  if (!env.DISCORD_BOT_TOKEN || !discordId) {
+    return;
+  }
+  
+  if (retryCount > 5) {
+    logger.error(`Discord DM notification failed for user ${discordId} and product ${product.id} after 5 retries.`);
+    return;
+  }
+  
+  try {
+    const title = product.title || 'Novo Produto';
+    const priceVal = product.skus?.[0]?.price;
+    const priceStr = priceVal !== undefined ? `¥ ${priceVal}` : 'N/A';
+    const cssdealsLink = product.product_url || '#';
+    const sourceLink = product.source_link || '#';
+    const images = Array.isArray(product.images) ? product.images : [];
+    
+    const timeStr = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    
+    const embedPrincipal = {
+      title: `🔔 Alerta: ${title}`,
+      url: cssdealsLink,
+      color: 16750848, // Um laranja/amarelo premium para alertas individuais
+      fields: [
+        { name: 'Preço', value: priceStr, inline: true },
+        { name: 'CSSDeals Link', value: `[Clique aqui](${cssdealsLink})`, inline: true },
+        { name: 'Source Link', value: `[Clique aqui](${sourceLink})`, inline: true },
+        { name: 'Horário do Alerta (GMT-3)', value: timeStr, inline: false }
+      ]
+    };
+    
+    if (images.length > 0) {
+      embedPrincipal.image = { url: images[0] };
+    }
+    
+    const embeds = [embedPrincipal];
+    
+    for (let i = 1; i < Math.min(images.length, 4); i++) {
+      embeds.push({
+        url: cssdealsLink,
+        image: { url: images[i] }
+      });
+    }
+
+    // 1. Abre canal de DM com o usuário
+    const channelRes = await axios.post(
+      'https://discord.com/api/v10/users/@me/channels',
+      { recipient_id: discordId },
+      {
+        headers: {
+          Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const dmChannelId = channelRes.data.id;
+
+    // 2. Envia a mensagem no canal de DM criado
+    await axios.post(
+      `https://discord.com/api/v10/channels/${dmChannelId}/messages`,
+      { embeds },
+      {
+        headers: {
+          Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    logger.info(`Discord DM notification sent successfully to user ${discordId} for product ${product.id}`);
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      const retryAfter = (error.response.data.retry_after || 1) * 1000;
+      logger.warn(`Discord DM rate limit hit. Retrying in ${retryAfter}ms (attempt ${retryCount + 1})...`);
+      await sleep(retryAfter);
+      return sendDirectProductNotification(discordId, product, retryCount + 1);
+    }
+    
+    logger.error(`Error sending Discord DM to ${discordId}: ${error.response?.data ? JSON.stringify(error.response.data) : error.message}`);
+  }
+}
+
 module.exports = {
-  sendNewProductNotification
+  sendNewProductNotification,
+  sendDirectProductNotification
 };

@@ -7,6 +7,7 @@ const { startAutoPing } = require('./utils/autoPing');
 const { startCrawler } = require('./crawler/index');
 const { startImageMigration } = require('./scripts/migrateImages');
 const productRoutes = require('./routes/productRoutes');
+const authRoutes = require('./routes/authRoutes');
 const productQueue = require('./queue/productQueue');
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api', productRoutes);
+app.use('/api', authRoutes);
 
 // Health Check & Crawler Status
 app.get('/api/health', (req, res) => {

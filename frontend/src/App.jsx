@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Plans from './pages/Plans';
+import Profile from './pages/Profile';
 import useStore from './store/useStore';
 
 function App() {
@@ -20,7 +24,10 @@ function App() {
           <Header />
           <Routes>
             <Route path="/" element={<Home />} />
-            {/* Adicionar mais rotas conforme necessário */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/plans" element={<Plans />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>
       </div>

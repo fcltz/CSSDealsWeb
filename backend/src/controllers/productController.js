@@ -1,6 +1,28 @@
 const supabase = require('../database/supabaseClient');
 const logger = require('../utils/logger');
 
+async function getUserPlan(req) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return 'free';
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return 'free';
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .single();
+    
+    return profile?.plan || 'free';
+  } catch (err) {
+    return 'free';
+  }
+}
+
 const getProducts = async (req, res) => {
   try {
     const { page = 1, limit = 20, category, search, sort = 'recent', minPrice, maxPrice, size } = req.query;
@@ -12,8 +34,23 @@ const getProducts = async (req, res) => {
 
     let query = supabase.from('products').select('*', { count: 'exact' });
 
-    if (category && category !== 'all') {
-      query = query.eq('category_id', category);
+    const userPlan = await getUserPlan(req);
+    if (userPlan === 'free' && false) {
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      query = query.lte('created_at', thirtyMinutesAgo);
+    }
+
+    if (category && category !== 'all' && category !== '[]') {
+      let categoryIds = [];
+      if (Array.isArray(category)) {
+        categoryIds = category;
+      } else if (typeof category === 'string') {
+        categoryIds = category.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      
+      if (categoryIds.length > 0) {
+        query = query.in('category_id', categoryIds);
+      }
     }
 
     if (search) {
@@ -82,6 +119,18 @@ const getProductById = async (req, res) => {
     if (error) {
       if (error.code === 'PGRST116') return res.status(404).json({ success: false, message: 'Product not found' });
       throw error;
+    }
+
+    const userPlan = await getUserPlan(req);
+    if (userPlan === 'free' && false) {
+      const productTime = new Date(data.created_at).getTime();
+      const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
+      if (productTime > thirtyMinutesAgo) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Este produto foi cadastrado há menos de 30 minutos. Assine um plano pago para ter acesso imediato!' 
+        });
+      }
     }
 
     res.json({ success: true, data });

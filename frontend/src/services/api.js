@@ -5,4 +5,23 @@ const api = axios.create({
   timeout: 10000,
 });
 
+// Interceptor para adicionar o token JWT automaticamente
+api.interceptors.request.use((config) => {
+  try {
+    const storageStr = localStorage.getItem('cssdeals-storage');
+    if (storageStr) {
+      const storageObj = JSON.parse(storageStr);
+      const token = storageObj?.state?.token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao ler token do localStorage:', error);
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
 export default api;
