@@ -97,7 +97,7 @@ async function syncProductJob(productSummary) {
             const productCategoryId = String(productData.category_id || '').trim();
 
             for (const profile of profiles) {
-              const discordId = profile.discord_id?.trim();
+              const discordId = profile.discord_id ? String(profile.discord_id).trim() : '';
               if (!discordId) continue;
 
               // Filtro por Categoria:

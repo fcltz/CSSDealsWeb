@@ -29,7 +29,7 @@ async function upsertProduct(productData) {
 
     const { error } = await supabase
       .from('products')
-      .upsert(productData, { onConflict: 'id' });
+      .upsert(productData);
 
     if (error) throw error;
   } catch (error) {
