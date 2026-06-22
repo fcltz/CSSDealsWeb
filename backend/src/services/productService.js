@@ -25,11 +25,21 @@ async function upsertProduct(productData) {
   }
 
   try {
-    productData.last_seen = new Date().toISOString();
+    const now = new Date().toISOString();
+    productData.last_seen = now;
 
     const existing = await getProduct(productData.id);
 
     if (existing) {
+      // Set updated_at on updates
+      productData.updated_at = now;
+      // If created_at doesn't exist on the database row, backfill it
+      if (!existing.created_at) {
+        productData.created_at = now;
+      } else {
+        delete productData.created_at;
+      }
+
       const { error } = await supabase
         .from('products')
         .update(productData)
@@ -37,6 +47,10 @@ async function upsertProduct(productData) {
 
       if (error) throw error;
     } else {
+      // New product: set both created_at and updated_at
+      productData.created_at = now;
+      productData.updated_at = now;
+
       const { error } = await supabase
         .from('products')
         .insert(productData);
@@ -115,7 +129,7 @@ async function getProduct(id) {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('id::text')
+      .select('id::text, created_at')
       .eq('id', String(id))
       .limit(1);
 

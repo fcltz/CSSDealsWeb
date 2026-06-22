@@ -29,7 +29,7 @@ async function signUp(req, res) {
 
     const user = data.user;
     if (user) {
-      // Tenta criar o perfil manualmente como fallback caso o trigger do banco não esteja configurado
+      const now = new Date().toISOString();
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -37,7 +37,9 @@ async function signUp(req, res) {
           email: user.email,
           plan: 'free',
           alert_categories: [],
-          alert_sizes: []
+          alert_sizes: [],
+          created_at: now,
+          updated_at: now
         });
 
       if (profileError && !profileError.message.includes('duplicate key')) {
@@ -80,7 +82,7 @@ async function signIn(req, res) {
 
     if (profileErr) {
       if (profileErr.code === 'PGRST116') {
-        // Se o perfil não existe, cria um
+        const now = new Date().toISOString();
         const { error: insertErr } = await supabase
           .from('profiles')
           .insert({ 
@@ -88,7 +90,9 @@ async function signIn(req, res) {
             email: data.user.email, 
             plan: 'free',
             alert_categories: [],
-            alert_sizes: []
+            alert_sizes: [],
+            created_at: now,
+            updated_at: now
           });
         if (insertErr) return handleDbError(insertErr, res);
       } else {
@@ -115,7 +119,7 @@ async function getProfile(req, res) {
 
     if (error) {
       if (error.code === 'PGRST116') {
-        // Cria perfil se não existir no banco por algum motivo
+        const now = new Date().toISOString();
         const { data: newProfile, error: insertErr } = await supabase
           .from('profiles')
           .insert({ 
@@ -123,7 +127,9 @@ async function getProfile(req, res) {
             email: req.user.email, 
             plan: 'free',
             alert_categories: [],
-            alert_sizes: []
+            alert_sizes: [],
+            created_at: now,
+            updated_at: now
           })
           .select()
           .single();

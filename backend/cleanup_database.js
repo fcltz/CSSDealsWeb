@@ -47,6 +47,14 @@ async function main() {
       const id = product.id;
       if (!id) continue;
 
+      // Garante que created_at e updated_at não sejam nulos, usando last_seen como fallback
+      if (!product.created_at) {
+        product.created_at = product.last_seen || new Date().toISOString();
+      }
+      if (!product.updated_at) {
+        product.updated_at = product.last_seen || new Date().toISOString();
+      }
+
       const existing = uniqueProductsMap[id];
       if (existing) {
         duplicateCount++;
