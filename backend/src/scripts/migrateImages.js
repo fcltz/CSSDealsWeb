@@ -56,7 +56,7 @@ async function iniciar() {
 
     const { data: produtos, error } = await supabase
       .from('products')
-      .select('id, images')
+      .select('id::text, images')
       .range(inicio, fim);
 
     if (error) {

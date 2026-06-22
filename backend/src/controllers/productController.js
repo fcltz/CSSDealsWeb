@@ -1,6 +1,8 @@
 const supabase = require('../database/supabaseClient');
 const logger = require('../utils/logger');
 
+const PRODUCT_FIELDS = 'id::text, code, title, description, category_id::text, category_name, source_link, product_url, cssbuy_order_id::text, cssbuy_order_no, creator_id::text, images, skus, created_at, updated_at, last_seen';
+
 async function getUserPlan(req) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -32,7 +34,7 @@ const getProducts = async (req, res) => {
     const from = (pageNum - 1) * limitNum;
     const to = from + limitNum - 1;
 
-    let query = supabase.from('products').select('*', { count: 'exact' });
+    let query = supabase.from('products').select(PRODUCT_FIELDS, { count: 'exact' });
 
     const userPlan = await getUserPlan(req);
     if (userPlan === 'free' && false) {
@@ -114,16 +116,19 @@ const getProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('products').select(PRODUCT_FIELDS).eq('id', id).limit(1);
 
-    if (error) {
-      if (error.code === 'PGRST116') return res.status(404).json({ success: false, message: 'Product not found' });
-      throw error;
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
     }
+
+    const product = data[0];
 
     const userPlan = await getUserPlan(req);
     if (userPlan === 'free' && false) {
-      const productTime = new Date(data.created_at).getTime();
+      const productTime = new Date(product.created_at).getTime();
       const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
       if (productTime > thirtyMinutesAgo) {
         return res.status(403).json({ 
@@ -133,7 +138,7 @@ const getProductById = async (req, res) => {
       }
     }
 
-    res.json({ success: true, data });
+    res.json({ success: true, data: product });
   } catch (error) {
     logger.error(`Error in getProductById: ${error.message}`);
     res.status(500).json({ success: false, message: 'Internal server error' });

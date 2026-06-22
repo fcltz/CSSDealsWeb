@@ -7,7 +7,7 @@ async function getExistingProductIds() {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('id');
+      .select('id::text');
 
     if (error) throw error;
 
@@ -27,11 +27,22 @@ async function upsertProduct(productData) {
   try {
     productData.last_seen = new Date().toISOString();
 
-    const { error } = await supabase
-      .from('products')
-      .upsert(productData);
+    const existing = await getProduct(productData.id);
 
-    if (error) throw error;
+    if (existing) {
+      const { error } = await supabase
+        .from('products')
+        .update(productData)
+        .eq('id', String(productData.id));
+
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('products')
+        .insert(productData);
+
+      if (error) throw error;
+    }
   } catch (error) {
     logger.error(`Error upserting product ${productData.id}: ${error.message}`);
   }
@@ -43,7 +54,7 @@ async function markMissingProductsAsDeleted(currentProductIds) {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('id');
+      .select('id::text');
 
     if (error) throw error;
 
@@ -73,11 +84,11 @@ async function getProductImages(id) {
       .from('products')
       .select('images')
       .eq('id', String(id))
-      .maybeSingle();
+      .limit(1);
 
     if (error) throw error;
 
-    return data ? data.images : null;
+    return data && data.length > 0 ? data[0].images : null;
   } catch (error) {
     logger.error(`Error fetching images for product ${id}: ${error.message}`);
     return null;
@@ -104,12 +115,12 @@ async function getProduct(id) {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('id')
+      .select('id::text')
       .eq('id', String(id))
-      .maybeSingle();
+      .limit(1);
 
     if (error) throw error;
-    return data;
+    return data && data.length > 0 ? data[0] : null;
   } catch (error) {
     logger.error(`Error fetching product ${id}: ${error.message}`);
     return null;
