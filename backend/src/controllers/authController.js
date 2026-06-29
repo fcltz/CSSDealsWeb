@@ -1,4 +1,5 @@
 const supabase = require('../database/supabaseClient');
+const { getGMT3ISOString } = require('../utils/date');
 
 // Helper para lidar com erros de tabela inexistente de forma amigável
 function handleDbError(err, res) {
@@ -29,7 +30,7 @@ async function signUp(req, res) {
 
     const user = data.user;
     if (user) {
-      const now = new Date().toISOString();
+      const now = getGMT3ISOString();
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -82,7 +83,7 @@ async function signIn(req, res) {
 
     if (profileErr) {
       if (profileErr.code === 'PGRST116') {
-        const now = new Date().toISOString();
+        const now = getGMT3ISOString();
         const { error: insertErr } = await supabase
           .from('profiles')
           .insert({ 
@@ -119,7 +120,7 @@ async function getProfile(req, res) {
 
     if (error) {
       if (error.code === 'PGRST116') {
-        const now = new Date().toISOString();
+        const now = getGMT3ISOString();
         const { data: newProfile, error: insertErr } = await supabase
           .from('profiles')
           .insert({ 
@@ -151,7 +152,7 @@ async function updateDiscordId(req, res) {
   try {
     const { data: profile, error } = await supabase
       .from('profiles')
-      .update({ discord_id, updated_at: new Date().toISOString() })
+      .update({ discord_id, updated_at: getGMT3ISOString() })
       .eq('id', req.user.id)
       .select()
       .single();
@@ -175,7 +176,7 @@ async function updatePlan(req, res) {
   try {
     const { data: profile, error } = await supabase
       .from('profiles')
-      .update({ plan, updated_at: new Date().toISOString() })
+      .update({ plan, updated_at: getGMT3ISOString() })
       .eq('id', req.user.id)
       .select()
       .single();
@@ -203,7 +204,7 @@ async function updateAlertFilters(req, res) {
       .update({ 
         alert_categories, 
         alert_sizes, 
-        updated_at: new Date().toISOString() 
+        updated_at: getGMT3ISOString() 
       })
       .eq('id', req.user.id)
       .select()

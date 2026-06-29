@@ -1,5 +1,6 @@
 const supabase = require('../database/supabaseClient');
 const logger = require('../utils/logger');
+const { getGMT3ISOString } = require('../utils/date');
 
 async function getExistingProductIds() {
   if (!supabase) return new Set();
@@ -25,7 +26,7 @@ async function upsertProduct(productData) {
   }
 
   try {
-    const now = new Date().toISOString();
+    const now = getGMT3ISOString();
     productData.last_seen = now;
 
     const existing = await getProduct(productData.id);

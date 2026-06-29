@@ -1,5 +1,12 @@
 -- Supabase schema for CSSDealsWeb
 
+-- NOTA: Para salvar/retornar datas no fuso horário GMT-3 (America/Sao_Paulo),
+-- execute os comandos abaixo no editor de SQL do Supabase:
+-- ALTER DATABASE postgres SET timezone TO 'America/Sao_Paulo';
+-- ALTER ROLE authenticator SET timezone TO 'America/Sao_Paulo';
+-- ALTER ROLE postgres SET timezone TO 'America/Sao_Paulo';
+-- ALTER ROLE service_role SET timezone TO 'America/Sao_Paulo';
+
 -- Tabela de Produtos
 CREATE TABLE public.products (
     id TEXT PRIMARY KEY,
