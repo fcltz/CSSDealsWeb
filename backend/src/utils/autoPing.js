@@ -13,7 +13,7 @@ function startAutoPing() {
   setInterval(async () => {
     try {
       await axios.get(env.AUTO_PING_URL, { timeout: 10000 });
-      logger.info('Ping enviado com sucesso.');
+      // logger.info('Ping enviado com sucesso.');
     } catch (error) {
       logger.error(`Ping falhou: ${error.message}`);
     }
