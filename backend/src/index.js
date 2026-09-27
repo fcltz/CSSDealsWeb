@@ -9,7 +9,6 @@ const { startImageMigration } = require('./scripts/migrateImages');
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
 const productQueue = require('./queue/productQueue');
-
 const app = express();
 
 // Middlewares

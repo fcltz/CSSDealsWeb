@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function sendNewProductNotification(product, retryCount = 0) {
-  if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CHANNEL_ID) {
+  if (!env.ENABLE_DISCORD || !env.DISCORD_BOT_TOKEN || !env.DISCORD_CHANNEL_ID) {
     return;
   }
   
@@ -77,7 +77,7 @@ async function sendNewProductNotification(product, retryCount = 0) {
 }
 
 async function sendDirectProductNotification(discordId, product, retryCount = 0) {
-  if (!env.DISCORD_BOT_TOKEN || !discordId) {
+  if (!env.ENABLE_DISCORD || !env.DISCORD_BOT_TOKEN || !discordId) {
     return;
   }
   

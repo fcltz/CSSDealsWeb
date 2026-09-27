@@ -1,6 +1,7 @@
 const cssDealsApi = require('../integrations/cssDealsApi');
 const productService = require('../services/productService');
 const discordService = require('../services/discordService');
+const env = require('../config/env');
 const logger = require('../utils/logger');
 
 async function syncProductJob(productSummary) {
@@ -54,7 +55,7 @@ async function syncProductJob(productSummary) {
     await productService.upsertProduct(productData);
     logger.debug(`Product ${productId} synced successfully.`);
     
-    if (isNewProduct) {
+    if (isNewProduct && env.ENABLE_DISCORD && env.DISCORD_BOT_TOKEN) {
       // 1. Notificação global no canal do servidor
       discordService.sendNewProductNotification(productData).catch(err => {
         logger.error(`Error sending global Discord notification: ${err.message}`);
