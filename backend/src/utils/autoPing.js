@@ -8,7 +8,10 @@ function startAutoPing() {
     return;
   }
 
-  const urls = env.AUTO_PING_URL;
+  const urls = env.AUTO_PING_URL.map(url => {
+    const base = url.replace(/\/+$/, '');
+    return `${base}/api/health`;
+  });
   logger.info(`AutoPing iniciado para ${urls.length} URL(s) com intervalo de ${env.AUTO_PING_INTERVAL}ms:`);
   urls.forEach((url, i) => logger.info(`  [${i + 1}] ${url}`));
 
