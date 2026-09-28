@@ -41,8 +41,8 @@ async function makeRequest(url, config = {}, defaultMaxRetries = 15) {
 
       // Se der 429, faz uma pausa até voltar (5 minutos) e tenta de novo
       if (error.response && error.response.status === 429) {
-        logger.warn(`Rate limit (429) hit. Pausing for 5 minutes before retrying...`);
-        await new Promise(resolve => setTimeout(resolve, 300000));
+        logger.warn(`Rate limit (429) hit. Pausing for 15 minutes before retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 900000));
         attempt--;
         continue;
       }

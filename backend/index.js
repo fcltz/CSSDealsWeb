@@ -1,14 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const env = require('./config/env');
-const logger = require('./utils/logger');
-const { startAutoPing } = require('./utils/autoPing');
-const { startCrawler } = require('./crawler/index');
-const { startImageMigration } = require('./scripts/migrateImages');
-const productRoutes = require('./routes/productRoutes');
-const authRoutes = require('./routes/authRoutes');
-const productQueue = require('./queue/productQueue');
+const env = require('./src/config/env');
+const logger = require('./src/utils/logger');
+const { startAutoPing } = require('./src/utils/autoPing');
+const { startCrawler } = require('./src/crawler/index');
+const { startImageMigration } = require('./src/scripts/migrateImages');
+const productRoutes = require('./src/routes/productRoutes');
+const authRoutes = require('./src/routes/authRoutes');
+const productQueue = require('./src/queue/productQueue');
 const app = express();
 
 // Middlewares
